@@ -15,7 +15,7 @@ type Transition = {
   triggeringSymbol: string;
   triggeringState: State;
   stateToMoveTo: State;
-  symbolToWrite: string;
+  symbolToWrite: string | null;
   directionToMove: DirectionToMove;
 };
 
@@ -24,6 +24,8 @@ const R = 1;
 const L = -1;
 
 const BLANK_TAPE_CELL = " ";
+
+let isLoggingMachineBehaviour = false;
 
 function getTransition(
   transitions: Transition[],
@@ -36,39 +38,39 @@ function getTransition(
   );
 }
 
-function simulateTM(tm: TM, input: string): void {
+function simulateTM(tm: TM, input: string): boolean {
   const tape = input.split("");
   let tapeIndex = 0;
   let state = tm.startState;
 
-  console.log("Initial Configuration:");
-  console.log(`tape: ${tape.join("")}`);
-  console.log(`tape index: ${tapeIndex}`);
-  console.log(`state: ${state}`);
-  console.log("");
+  log("Initial Configuration:");
+  log(`tape: ${tape.join("")}`);
+  log(`tape index: ${tapeIndex}`);
+  log(`state: ${state}`);
+  log("");
 
   for (let iter = 1; true; iter++) {
     const symbol = tape[tapeIndex];
     const transition = getTransition(tm.transitions, symbol, state);
 
     if (state === tm.acceptState) {
-      console.log("Machine has entered accept state, accept input and halt");
-      break;
+      log("Machine has entered accept state, accept input and halt");
+      return true;
     }
 
     if (state === tm.rejectState) {
-      console.log("Machine has entered reject state, reject input and halt");
-      break;
+      log("Machine has entered reject state, reject input and halt");
+      return false;
     }
 
     if (transition === undefined) {
-      console.log(
-        `no transition has been defined for state: ${state}, symbol: ${symbol}, reject input and halt`
-      );
-      break;
+      log(`no transition at state-${state}, symbol-${symbol}, reject`);
+      return false;
     }
 
-    tape[tapeIndex] = transition.symbolToWrite;
+    if (transition.symbolToWrite !== null) {
+      tape[tapeIndex] = transition.symbolToWrite;
+    }
     tapeIndex += transition.directionToMove;
     state = transition.stateToMoveTo;
 
@@ -80,55 +82,139 @@ function simulateTM(tm: TM, input: string): void {
       tape.push(BLANK_TAPE_CELL);
     }
 
-    console.log(`After Iteration ${iter}:`);
-    console.log(`tape: ${tape.join("")}`);
-    console.log(`tape index: ${tapeIndex}`);
-    console.log(`state: ${state}`);
-    console.log("");
+    log(`After Iteration ${iter}:`);
+    log(`tape: ${tape.join("")}`);
+    log(`tape index: ${tapeIndex}`);
+    log(`state: ${state}`);
+    log("");
   }
 }
 
 const exampleTM = {
-  startState: "q0",
+  startState: "q1",
   acceptState: "qacc",
   rejectState: "qrej",
   transitions: [
     {
-      triggeringSymbol: "a",
-      triggeringState: "q0",
-      stateToMoveTo: "q1",
-      symbolToWrite: "b",
-      directionToMove: R,
-    },
-    {
-      triggeringSymbol: "a",
-      triggeringState: "q1",
-      stateToMoveTo: "q1",
-      symbolToWrite: "b",
-      directionToMove: R,
-    },
-    {
-      triggeringSymbol: "b",
-      triggeringState: "q1",
-      stateToMoveTo: "qacc",
-      symbolToWrite: "a",
-      directionToMove: L,
-    },
-    {
       triggeringSymbol: BLANK_TAPE_CELL,
-      triggeringState: "q0",
+      triggeringState: "q1",
       stateToMoveTo: "qrej",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "x",
+      triggeringState: "q1",
+      stateToMoveTo: "qrej",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "0",
+      triggeringState: "q1",
+      stateToMoveTo: "q2",
       symbolToWrite: BLANK_TAPE_CELL,
-      directionToMove: L,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "x",
+      triggeringState: "q2",
+      stateToMoveTo: "q2",
+      symbolToWrite: null,
+      directionToMove: R,
     },
     {
       triggeringSymbol: BLANK_TAPE_CELL,
-      triggeringState: "q1",
-      stateToMoveTo: "qrej",
-      symbolToWrite: "b",
+      triggeringState: "q2",
+      stateToMoveTo: "qacc",
+      symbolToWrite: null,
       directionToMove: R,
+    },
+    {
+      triggeringSymbol: "0",
+      triggeringState: "q2",
+      stateToMoveTo: "q3",
+      symbolToWrite: "x",
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "x",
+      triggeringState: "q3",
+      stateToMoveTo: "q3",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "0",
+      triggeringState: "q3",
+      stateToMoveTo: "q4",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: BLANK_TAPE_CELL,
+      triggeringState: "q3",
+      stateToMoveTo: "q5",
+      symbolToWrite: null,
+      directionToMove: L,
+    },
+    {
+      triggeringSymbol: "0",
+      triggeringState: "q4",
+      stateToMoveTo: "q3",
+      symbolToWrite: "x",
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "x",
+      triggeringState: "q4",
+      stateToMoveTo: "q4",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: BLANK_TAPE_CELL,
+      triggeringState: "q4",
+      stateToMoveTo: "qrej",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: BLANK_TAPE_CELL,
+      triggeringState: "q5",
+      stateToMoveTo: "q2",
+      symbolToWrite: null,
+      directionToMove: R,
+    },
+    {
+      triggeringSymbol: "0",
+      triggeringState: "q5",
+      stateToMoveTo: "q5",
+      symbolToWrite: null,
+      directionToMove: L,
+    },
+    {
+      triggeringSymbol: "x",
+      triggeringState: "q5",
+      stateToMoveTo: "q5",
+      symbolToWrite: null,
+      directionToMove: L,
     },
   ],
 };
 
-simulateTM(exampleTM, "abba");
+function log(str: string): void {
+  if (isLoggingMachineBehaviour) {
+    console.log(str);
+  }
+}
+
+function hasLog2Integer(num: number): boolean {
+  return Number.isInteger(Math.log2(num));
+}
+
+for (let n = 1; n < 1000; n++) {
+  const input = "0".repeat(n);
+
+  console.assert(simulateTM(exampleTM, input) === hasLog2Integer(n));
+}
