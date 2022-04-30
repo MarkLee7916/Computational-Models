@@ -52,21 +52,21 @@ function pop(stack: Stack): Stack {
   return stack.slice(0, stack.length - 1);
 }
 
-function simulatePDA(PDA: PDA, input: Input): boolean {
+function simulatePDA(pda: PDA, input: Input): boolean {
   const runStateQueue: RunState[] = [
-    { state: PDA.startState, inputIndex: 0, stack: "" },
+    { state: pda.startState, inputIndex: 0, stack: "" },
   ];
 
   while (runStateQueue.length > 0) {
     const { state, inputIndex, stack } = runStateQueue.shift() as RunState;
     const char = input[inputIndex];
 
-    if (inputIndex === input.length && PDA.acceptStates.includes(state)) {
+    if (inputIndex === input.length && pda.acceptStates.includes(state)) {
       console.log("Input used up and now in accept state, accept input");
       return true;
     }
 
-    getTransitions(PDA, stack, state, char).forEach(transition => {
+    getTransitions(pda, stack, state, char).forEach(transition => {
       const nextInputIndex =
         transition.triggeringChar === EPSILON ? inputIndex : inputIndex + 1;
 
@@ -135,6 +135,8 @@ console.assert(simulatePDA(examplePDA, "1001") === false);
 console.assert(simulatePDA(examplePDA, "1100") === false);
 console.assert(simulatePDA(examplePDA, "0101") === false);
 console.assert(simulatePDA(examplePDA, "1010") === false);
+console.assert(simulatePDA(examplePDA, "00111") === false);
+console.assert(simulatePDA(examplePDA, "00011") === false);
 
 for (let i = 0; i < 100; i++) {
   console.assert(
